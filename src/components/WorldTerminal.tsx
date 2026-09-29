@@ -61,7 +61,7 @@ export function WorldTerminal() {
       <header className="world-top">
         <button className="world-brand" onClick={() => setPanel("home")}>
           <span className="brand-frog">🐸</span>
-          <span><b>Как прекрасна жизнь</b><small>JARVIS для трейдера · с душой Лягушки</small></span>
+          <span><b>Как прекрасна жизнь</b><small>Miracle_Dzhambek · с душой Лягушки</small></span>
         </button>
         <div className="world-top-actions">
           <div className="market-pill"><span className="live-dot" /> MOEX · {marketText}</div>
@@ -99,7 +99,7 @@ export function WorldTerminal() {
 
       <motion.div className="frog-guide" animate={{ y: market === "active" ? -8 : 0 }}>
         <div className="frog-portrait">🐸<span className="frog-aura" /></div>
-        <div className="frog-copy"><span>ЛЯГУШКА · НАСТАВНИК</span><b>{frogLine}</b></div>
+        <div className="frog-copy"><span>MIRACLE_DZHAMBEK · НАСТАВНИК</span><b>{frogLine}</b></div>
       </motion.div>
 
       <div className="river-card glass">
@@ -148,7 +148,7 @@ export function WorldTerminal() {
 function PanelContent({ panel, onAction }: { panel: Panel; onAction: (message: string, next?: Panel) => void }) {
   if (panel === "map") return <><PanelHead icon="🗺️" title="Карта пути" subtitle="От Долины Рек к Вершине Свободы."/><div className="journey-list">{locations.map((x, i) => <div className={`journey-row ${x.open ? "open" : ""}`} key={x.id}><span>{x.icon}</span><div><b>{x.name}</b><small>{x.short} · {x.value}</small></div><em>{x.open ? "Открыто" : "Закрыто"}</em></div>)}</div><div className="panel-tip">🐸 Следующая остановка — Лес Дисциплины. Путь открывается действиями, а не спешкой.</div></>;
   if (panel === "river") return <><PanelHead icon="🌊" title="Река · наблюдение" subtitle="Сравниваем факты, а не настроение рынка."/><div className="terminal-box"><span>MOEXCNY-12.26</span><b>3 681 ₽</b><small>Демо-поток · время последней проверки — сейчас</small></div><div className="signal-box"><Sparkles/><div><b>Светлячки ИИ</b><p>Сигнал не является приказом. Лягушка сначала отделяет изображение от подтверждённых рыночных данных.</p></div></div><button className="panel-primary" onClick={() => onAction("✨ Точка наблюдения сохранена.", "journal")}>Сохранить наблюдение</button></>;
-  if (panel === "ai") return <><PanelHead icon="🐸" title="JARVIS · Лягушка ИИ" subtitle="Спокойный слой над торговым терминалом."/><div className="ai-dialog"><MessageCircle size={18}/><div><b>Что я делаю</b><p>Читаю скриншот, выделяю видимые факты, отдельно проверяю доступные данные и показываю неопределённость.</p></div></div><div className="ai-rules"><b>Правила Лягушки</b><span>01 · Сначала факты</span><span>02 · Потом сценарии</span><span>03 · Риск до входа</span><span>04 · Решение остаётся за тобой</span></div></>;
+  if (panel === "ai") return <><PanelHead icon="🐸" title="Miracle_Dzhambek · Лягушка ИИ" subtitle="Спокойный наставник над торговым терминалом."/><div className="ai-dialog"><MessageCircle size={18}/><div><b>Что я делаю</b><p>Читаю скриншот, выделяю видимые факты, отдельно проверяю доступные данные и показываю неопределённость.</p></div></div><div className="ai-rules"><b>Правила Лягушки</b><span>01 · Сначала факты</span><span>02 · Потом сценарии</span><span>03 · Риск до входа</span><span>04 · Решение остаётся за тобой</span></div></>;
   if (panel === "journal") return <><PanelHead icon="📖" title="Дневник" subtitle="Твоя память о рынке и собственных решениях."/><div className="journal-entry"><span>Сегодня · 23:06</span><b>Рынок наблюдаем, не догоняем.</b><p>Проверить позицию без спешки. Записать наблюдение. Вернуться к цели.</p></div><button className="panel-primary" onClick={() => onAction("🔥 Шаг записан. +1 к дисциплине.", "journal")}>Записать сегодняшний шаг</button></>;
   if (panel === "backpack") return <><PanelHead icon="🎒" title="Рюкзак" subtitle="То, что ты собрал по дороге."/><div className="inventory-grid"><div><Fish/><b>3 / 10</b><small>Рыбы</small></div><div><Sparkles/><b>5</b><small>Светлячки</small></div><div><Trophy/><b>1</b><small>Знак пути</small></div><div><Flame/><b>6 дней</b><small>Стрик</small></div></div></>;
   if (panel === "shop") return <><PanelHead icon="🏪" title="Лавка лагеря" subtitle="Улучшения, которые помогают наблюдать, а не торопиться."/><div className="shop-row"><span>🔭</span><div><b>Бинокль реки</b><small>Открывает расширенное наблюдение</small></div><strong>120 XP</strong></div><div className="shop-row"><span>🪵</span><div><b>Костёр дисциплины</b><small>Поддерживает вечерний ритуал</small></div><strong>250 XP</strong></div></>;
