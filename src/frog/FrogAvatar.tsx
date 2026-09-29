@@ -1,0 +1,1 @@
+export function FrogAvatar({size=64}:{size?:number}){return <div style={{width:size,height:size}} className="flex items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-300/10 text-4xl">🐸</div>}

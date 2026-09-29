@@ -1,0 +1,1 @@
+export function FrogSpeechBubble({text}:{text:string}){return <div className="rounded-2xl border border-emerald-300/15 bg-slate-950/80 px-4 py-3 text-xs text-slate-300"><b className="text-emerald-300">🐸 Лягушка</b><div>{text}</div></div>}

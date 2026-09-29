@@ -1,105 +1,47 @@
-"""
-api.py
-
-FastAPI-сервер между React Mini App и analyzer.py/database.py.
-
-Запуск:
-    uvicorn api:app --reload --port 8000
-"""
-
-import logging
 import os
 from pathlib import Path
 from uuid import uuid4
-
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI,File,Form,HTTPException,UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-
+from pydantic import BaseModel
 from analyzer import analyze_screenshot
-from database import init_db, save_trade
+from database import init_db,save_trade,create_monitor,get_active_monitors,update_monitor_price
+from market_data import get_futures_price
 from telegram_auth import get_user_id_from_init_data
-
-
-BASE_DIR = Path(__file__).resolve().parent
-UPLOADS_DIR = BASE_DIR / "uploads"
-logger = logging.getLogger(__name__)
-
-app = FastAPI(title="Как прекрасна жизнь — AI Trade API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
+UPLOADS_DIR=Path(__file__).resolve().parent/"uploads"
+app=FastAPI(title="Как прекрасна жизнь — AI Trade API")
+app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_credentials=False,allow_methods=["*"],allow_headers=["*"])
+class MonitorCreate(BaseModel):
+ user_id:int=0;ticker:str;side:str;entry_price:float;target_price:float|None=None;stop_price:float|None=None;trade_id:int=0
 @app.on_event("startup")
-def startup() -> None:
-    UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-    init_db()
-
-
+def startup():UPLOADS_DIR.mkdir(parents=True,exist_ok=True);init_db()
 @app.get("/api/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
+def health():return {"status":"ok"}
 @app.post("/api/analyze")
-def analyze_image(
-    file: UploadFile = File(...),
-    init_data: str = Form(""),
-) -> dict:
-    """Принимает скриншот, проверяет Telegram initData и сохраняет результат."""
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(
-            status_code=400,
-            detail="Нужен файл изображения (PNG, JPG, JPEG, WEBP и т.п.).",
-        )
-
-    suffix = Path(file.filename or "image.jpg").suffix.lower()
-    if not suffix or len(suffix) > 10:
-        suffix = ".jpg"
-
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    user_id = get_user_id_from_init_data(init_data, bot_token)
-    if user_id is None:
-        user_id = 0
-        logger.info("Telegram user_id не передан — используется user_id=0 (режим браузерного теста)")
-    else:
-        logger.info("Telegram user_id успешно получен: %s", user_id)
-
-    image_path = UPLOADS_DIR / f"web_{uuid4().hex}{suffix}"
-
-    try:
-        with image_path.open("wb") as destination:
-            while chunk := file.file.read(1024 * 1024):
-                destination.write(chunk)
-
-        result = analyze_screenshot(image_path)
-
-        trade_id = save_trade(
-            user_id=user_id,
-            timestamp=result["timestamp"],
-            ticker=result.get("ticker"),
-            side=result.get("side"),
-            action=result.get("action"),
-            advice=result.get("advice"),
-            current_price=result.get("current_price"),
-            reasoning=result.get("reasoning"),
-            image_path=str(image_path),
-        )
-
-        result["trade_id"] = trade_id
-        return result
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Не удалось обработать скриншот: {exc}",
-        ) from exc
-    finally:
-        file.file.close()
+def analyze_image(file:UploadFile=File(...),init_data:str=Form("")):
+ if not file.content_type or not file.content_type.startswith("image/"):raise HTTPException(400,"Нужен файл изображения.")
+ user_id=get_user_id_from_init_data(init_data,os.getenv("TELEGRAM_BOT_TOKEN","")) if init_data else 0
+ path=UPLOADS_DIR/f"web_{uuid4().hex}{Path(file.filename or 'image.jpg').suffix.lower() or '.jpg'}"
+ try:
+  with path.open("wb") as dst:
+   while chunk:=file.file.read(1024*1024):dst.write(chunk)
+  result=analyze_screenshot(path);result["trade_id"]=save_trade(user_id,result["timestamp"],result.get("ticker"),result.get("side"),result.get("action"),result.get("advice"),result.get("current_price"),result.get("reasoning"),str(path));return result
+ except Exception as exc:raise HTTPException(500,f"Не удалось обработать скриншот: {exc}") from exc
+ finally:file.file.close()
+@app.post("/api/monitor/create")
+def monitor_create(p:MonitorCreate):
+ side=p.side.upper()
+ if side not in {"LONG","SHORT"}:raise HTTPException(400,"side должен быть LONG или SHORT")
+ if p.target_price is None and p.stop_price is None:raise HTTPException(400,"Укажи target_price или stop_price")
+ return {"monitor_id":create_monitor(trade_id=p.trade_id,user_id=p.user_id,ticker=p.ticker,side=side,entry_price=p.entry_price,target_price=p.target_price,stop_price=p.stop_price),"status":"active"}
+@app.get("/api/monitor/active")
+async def monitor_active(user_id:int=0):
+ rows=[m for m in get_active_monitors() if user_id==0 or m["user_id"]==user_id];out=[]
+ for m in rows:
+  q=await get_futures_price(m["ticker"]);price=q.get("market_price") if q else m.get("last_checked_price")
+  if price is not None:update_monitor_price(m["id"],float(price))
+  pct=rub=None
+  if price is not None:
+   sign=1 if m["side"]=="LONG" else -1;pct=(price-m["entry_price"])/m["entry_price"]*100*sign;rub=(price-m["entry_price"])*sign
+  x=dict(m);x.update(current_price=price,pnl_percent=pct,pnl_rub=rub);out.append(x)
+ return {"monitors":out}

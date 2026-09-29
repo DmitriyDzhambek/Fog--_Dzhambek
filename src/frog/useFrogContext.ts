@@ -1,0 +1,1 @@
+import {useMemo} from "react";import {getFrogContext,getFrogLine} from "./frogPersonality";export function useFrogContext(){return useMemo(()=>({context:getFrogContext(),line:getFrogLine()}),[])}

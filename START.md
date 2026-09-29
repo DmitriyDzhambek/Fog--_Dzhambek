@@ -1,70 +1,26 @@
-# Как прекрасна жизнь — запуск этапа анализа сделки
+# Как прекрасна жизнь — Лягушка-трейдер
 
-## 1. React
+## Текущая версия
+Торговый терминал с RPG-слоем: Долина Рек, живая Лягушка-наставник, карта пути, калькулятор позиции и Smart Exit Alarm.
 
-В терминале проекта:
-
-```powershell
+### Frontend
 npm install
-npm start
-```
+npm run build
+npm run dev
 
-React: http://localhost:5173
-
-## 2. Python / FastAPI
-
-Во втором терминале, в той же папке:
-
-```powershell
+### Backend
 pip install -r requirements.txt
 uvicorn api:app --reload --port 8000
-```
 
-Проверка сервера:
+### Smart Exit
+Сценарий: short YDEX-12.26, вход 3681 → target 3650 / stop 3750 → монитор → MOEX каждые 5 минут → Telegram push при цели/стопе и контрольный pulse не чаще раза в 30 минут.
 
-http://localhost:8000/api/health
+API:
+- GET /api/health
+- POST /api/analyze
+- POST /api/monitor/create
+- GET /api/monitor/active?user_id=0
 
-Ожидаемый ответ:
+Для Vision нужен OPENAI_API_KEY. Для Telegram нужен TELEGRAM_BOT_TOKEN.
 
-```json
-{"status":"ok"}
-```
-
-## 3. Проверка сделки
-
-1. Оставить оба терминала запущенными.
-2. Открыть React в браузере.
-3. Нажать зелёную кнопку **Сделка**.
-4. Выбрать скриншот из Тинькофф.
-5. Дождаться ответа Лягушки.
-
-React отправляет файл на:
-
-`POST http://localhost:8000/api/analyze`
-
-Python сохраняет скриншот в `uploads/`, вызывает `analyzer.py` и сохраняет результат через `database.py`.
-
-Для реального анализа также нужен настроенный `OPENAI_API_KEY` в окружении Python.
-
-## 4. Новые экраны Mini App
-
-Добавлен UI-каркас из 7 экранов в `src/screens/`:
-
-- `HomeScreen.tsx` — совет дня, задания, статистика.
-- `MapScreen.tsx` — карта Долины и 5 локаций.
-- `AchievementsScreen.tsx` — сетка из 6 достижений.
-- `JournalScreen.tsx` — мок-журнал сделок с фильтрами и раскрытием деталей.
-- `AssistantScreen.tsx` — мок-чат с ИИ-лягушкой и 5 Светлячками.
-- `BackpackScreen.tsx` — 6 предметов рюкзака.
-- `ShopScreen.tsx` — скины, бусты и премиум с мок-покупками.
-
-Навигация собрана в `src/App.tsx`. `DealModal.tsx` продолжает открываться через центральную кнопку «Сделка» и не изменён.
-
-Для запуска:
-
-```powershell
-npm install
-npm start
-```
-
-Python/FastAPI запускается отдельно и этим этапом не изменяется.
+Vercel подходит для frontend. FastAPI и Telegram polling/scheduler работают отдельно.
