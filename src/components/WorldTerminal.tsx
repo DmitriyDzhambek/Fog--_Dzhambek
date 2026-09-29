@@ -10,6 +10,7 @@ import { PositionCalculator } from "./PositionCalculator";
 import { Sidebar, SidebarMenuButton, type SidebarKey } from "./Sidebar";
 import { DailyQuote } from "./DailyQuote";
 import { MapWidgets } from "./MapWidgets";
+import { WisdomToast } from "./WisdomToast";
 
 type Panel = "home" | "map" | "achievements" | "river" | "ai" | "journal" | "backpack" | "shop" | "analytics" | "profile" | "settings" | null;
 
@@ -160,6 +161,7 @@ export function WorldTerminal({
       </div>
 
       <DailyQuote />
+      <WisdomToast />
       <div className="world-toast"><span>●</span>{notice}</div>
 
       <nav className="world-dock glass">

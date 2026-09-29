@@ -5,6 +5,7 @@ import {GlassPanel} from "../components/GlassPanel";
 import {GameMap} from "../components/GameMap";
 import {MapWidgets} from "../components/MapWidgets";
 import {MorningRitual} from "../components/MorningRitual";
+import {WisdomToast} from "../components/WisdomToast";
 import {LivePnL} from "../components/LivePnL";
 import {FrogAvatar} from "../frog/FrogAvatar";
 import {FrogSpeechBubble} from "../frog/FrogSpeechBubble";
@@ -41,6 +42,7 @@ export function HomeScreen({onNavigate}:{onNavigate:(x:string)=>void}){
       <GlassPanel className="rounded-3xl p-5"><div className="flex justify-between"><div><h3 className="text-lg font-bold">Ежедневные задания</h3><p className="text-xs text-slate-500">Небольшие действия дают большой стрик.</p></div><span className="rounded-xl bg-emerald-300/10 px-3 py-2 text-xs text-emerald-300">+350 ₽</span></div><div className="mt-4 space-y-2">{tasks.map((t,i)=><button key={i} onClick={()=>setTasks(a=>a.map((x,j)=>j===i?[x[0],x[1],!x[2]]:x))} className="flex w-full items-center gap-3 rounded-2xl border border-white/5 bg-white/[.035] p-3 text-left"><span className={"flex h-7 w-7 items-center justify-center rounded-full border "+(t[2]?"border-emerald-300 bg-emerald-300 text-slate-950":"border-slate-600 text-transparent")}><Check size={15}/></span><span className={"flex-1 text-sm "+(t[2]?"text-slate-500 line-through":"text-slate-200")}>{t[0]}</span><span className="text-xs font-bold text-amber-200">+{t[1]} ₽</span></button>)}</div></GlassPanel>
       <GlassPanel className="rounded-3xl p-5"><h3 className="text-lg font-bold">Моя статистика</h3><div className="mt-4 grid grid-cols-2 gap-3">{stats.map(([l,v,I])=><div key={l} className="rounded-2xl bg-white/[.035] p-4"><I size={17} className="text-emerald-300"/><div className="mt-3 text-xl font-bold">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>)}</div></GlassPanel>
     </div>
+    <WisdomToast/>
     <button onClick={()=>onNavigate("journal")} className="flex w-full justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 py-3 text-sm font-bold text-emerald-200"><BookOpen size={17}/>Открыть Дневник</button>
   </motion.div>
 }
