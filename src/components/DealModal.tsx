@@ -62,7 +62,8 @@ export function DealModal({ open, onClose }: Props) {
     formData.append("init_data", telegramInitData);
 
     try {
-      const response = await fetch("http://localhost:8000/api/analyze", {
+      const apiBase = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+      const response = await fetch(`${apiBase}/api/analyze`, {
         method: "POST",
         body: formData,
       });
