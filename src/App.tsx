@@ -26,7 +26,7 @@ const sidebar = [
 
 function ScreenView({ activeNav, onNavigate }: { activeNav: string; onNavigate: (key: string) => void }) {
   switch (activeNav) {
-    case "map": return <MapScreen onNavigate={onNavigate} />;
+    case "map": return <MapScreen />;
     case "achievements": return <AchievementsScreen />;
     case "journal": return <JournalScreen />;
     case "ai": return <AssistantScreen />;
