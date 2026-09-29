@@ -1,1 +1,46 @@
-import {useState} from "react";import {motion} from "framer-motion";import {BookOpen,Check,Flame,Sparkles,Target,Trophy,Zap} from "lucide-react";import {GlassPanel} from "../components/GlassPanel";import {LivePnL} from "../components/LivePnL";import {FrogAvatar} from "../frog/FrogAvatar";import {FrogSpeechBubble} from "../frog/FrogSpeechBubble";import {useFrogContext} from "../frog/useFrogContext";const T=[["Проверить позицию без спешки",50,true],["Записать наблюдение в Дневник",75,false],["Посмотреть сигнал Светлячков",100,false],["Сделать один спокойный шаг",125,false]];export function HomeScreen({onNavigate}:{onNavigate:(x:string)=>void}){const[tasks,setTasks]=useState(T);const frog=useFrogContext();const stats=[["Сделок всего","18",Target],["% успеха","72%",Trophy],["Стрик","6 дней",Flame],["XP","1 240",Zap]] as const;return <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} className="mx-auto max-w-6xl space-y-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="flex items-center gap-2 text-2xl font-bold"><Sparkles className="text-emerald-300"/>Главная</h2><p className="mt-1 text-sm text-slate-400">Торговый терминал с душой Лягушки.</p></div><LivePnL/></div><GlassPanel className="rounded-3xl p-5"><div className="flex gap-4"><FrogAvatar/><div className="flex-1"><div className="text-[10px] uppercase tracking-[.2em] text-emerald-300">Лягушка-наставник</div><FrogSpeechBubble text={frog.line}/></div></div></GlassPanel><div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]"><GlassPanel className="rounded-3xl p-5"><div className="flex justify-between"><div><h3 className="text-lg font-bold">Ежедневные задания</h3><p className="text-xs text-slate-500">Небольшие действия дают большой стрик.</p></div><span className="rounded-xl bg-emerald-300/10 px-3 py-2 text-xs text-emerald-300">+350 ₽</span></div><div className="mt-4 space-y-2">{tasks.map((t,i)=><button key={i} onClick={()=>setTasks(a=>a.map((x,j)=>j===i?[x[0],x[1],!x[2]]:x))} className="flex w-full items-center gap-3 rounded-2xl border border-white/5 bg-white/[.035] p-3 text-left"><span className={"flex h-7 w-7 items-center justify-center rounded-full border "+(t[2]?"border-emerald-300 bg-emerald-300 text-slate-950":"border-slate-600 text-transparent")}><Check size={15}/></span><span className={"flex-1 text-sm "+(t[2]?"text-slate-500 line-through":"text-slate-200")}>{t[0]}</span><span className="text-xs font-bold text-amber-200">+{t[1]} ₽</span></button>)}</div></GlassPanel><GlassPanel className="rounded-3xl p-5"><h3 className="text-lg font-bold">Моя статистика</h3><div className="mt-4 grid grid-cols-2 gap-3">{stats.map(([l,v,I])=><div key={l} className="rounded-2xl bg-white/[.035] p-4"><I size={17} className="text-emerald-300"/><div className="mt-3 text-xl font-bold">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>)}</div></GlassPanel></div><button onClick={()=>onNavigate("journal")} className="flex w-full justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 py-3 text-sm font-bold text-emerald-200"><BookOpen size={17}/>Открыть Дневник</button></motion.div>}
+import {useState} from "react";
+import {motion} from "framer-motion";
+import {BookOpen,Check,Flame,Sparkles,Target,Trophy,Zap} from "lucide-react";
+import {GlassPanel} from "../components/GlassPanel";
+import {GameMap} from "../components/GameMap";
+import {MapWidgets} from "../components/MapWidgets";
+import {MorningRitual} from "../components/MorningRitual";
+import {LivePnL} from "../components/LivePnL";
+import {FrogAvatar} from "../frog/FrogAvatar";
+import {FrogSpeechBubble} from "../frog/FrogSpeechBubble";
+import {useFrogContext} from "../frog/useFrogContext";
+
+const T=[["Проверить позицию без спешки",50,true],["Записать наблюдение в Дневник",75,false],["Посмотреть сигнал Светлячков",100,false],["Сделать один спокойный шаг",125,false]];
+
+export function HomeScreen({onNavigate}:{onNavigate:(x:string)=>void}){
+  const[tasks,setTasks]=useState(T);
+  const frog=useFrogContext();
+  const stats=[["Сделок всего","18",Target],["% успеха","72%",Trophy],["Стрик","6 дней",Flame],["XP","1 240",Zap]] as const;
+  return <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} className="mx-auto max-w-6xl space-y-5">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><h2 className="flex items-center gap-2 text-2xl font-bold"><Sparkles className="text-emerald-300"/>Главная</h2><p className="mt-1 text-sm text-slate-400">Торговый терминал с душой Лягушки.</p></div>
+      <LivePnL/>
+    </div>
+
+    <GlassPanel className="rounded-3xl p-5">
+      <div className="flex flex-wrap items-center gap-4">
+        <motion.div animate={{scale:[1,1.05,1]}} transition={{duration:3,repeat:Infinity,ease:"easeInOut"}}><FrogAvatar size={80}/></motion.div>
+        <div className="min-w-0 flex-1"><div className="text-[10px] font-bold uppercase tracking-[.18em] text-emerald-300">MIRACLE_DZHAMBEK · НАСТАВНИК</div><FrogSpeechBubble text="Ква! Доброе утро, босс. Начнём с ритуала?"/></div>
+      </div>
+    </GlassPanel>
+
+    <MorningRitual/>
+
+    <div className="space-y-3">
+      <div className="flex items-end justify-between"><div><div className="text-[10px] font-bold uppercase tracking-[.18em] text-emerald-300">🌍 Живой мир</div><h2 className="text-xl font-bold">Карта пути</h2></div><span className="text-[10px] text-slate-500">2 175 ₽ → 16 000 000 ₽</span></div>
+      <GameMap/>
+      <MapWidgets/>
+    </div>
+
+    <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
+      <GlassPanel className="rounded-3xl p-5"><div className="flex justify-between"><div><h3 className="text-lg font-bold">Ежедневные задания</h3><p className="text-xs text-slate-500">Небольшие действия дают большой стрик.</p></div><span className="rounded-xl bg-emerald-300/10 px-3 py-2 text-xs text-emerald-300">+350 ₽</span></div><div className="mt-4 space-y-2">{tasks.map((t,i)=><button key={i} onClick={()=>setTasks(a=>a.map((x,j)=>j===i?[x[0],x[1],!x[2]]:x))} className="flex w-full items-center gap-3 rounded-2xl border border-white/5 bg-white/[.035] p-3 text-left"><span className={"flex h-7 w-7 items-center justify-center rounded-full border "+(t[2]?"border-emerald-300 bg-emerald-300 text-slate-950":"border-slate-600 text-transparent")}><Check size={15}/></span><span className={"flex-1 text-sm "+(t[2]?"text-slate-500 line-through":"text-slate-200")}>{t[0]}</span><span className="text-xs font-bold text-amber-200">+{t[1]} ₽</span></button>)}</div></GlassPanel>
+      <GlassPanel className="rounded-3xl p-5"><h3 className="text-lg font-bold">Моя статистика</h3><div className="mt-4 grid grid-cols-2 gap-3">{stats.map(([l,v,I])=><div key={l} className="rounded-2xl bg-white/[.035] p-4"><I size={17} className="text-emerald-300"/><div className="mt-3 text-xl font-bold">{v}</div><div className="text-[10px] text-slate-500">{l}</div></div>)}</div></GlassPanel>
+    </div>
+    <button onClick={()=>onNavigate("journal")} className="flex w-full justify-center gap-2 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 py-3 text-sm font-bold text-emerald-200"><BookOpen size={17}/>Открыть Дневник</button>
+  </motion.div>
+}
