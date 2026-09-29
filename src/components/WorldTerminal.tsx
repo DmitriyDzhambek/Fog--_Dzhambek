@@ -1,14 +1,17 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BarChart3, BookOpen, Backpack, Bell, Bot, ChevronRight, Compass, Fish,
-  Flame, Map, MessageCircle, Moon, Package, Settings, ShoppingBag,
+  BarChart3, Bell, BookOpen, Backpack, Bot, ChevronRight, Compass, Fish,
+  Flame, Map, MessageCircle, Moon, Settings, ShoppingBag,
   Sparkles, Target, Trophy, TrendingDown, TrendingUp, X, Zap
 } from "lucide-react";
 import { DealModal } from "./DealModal";
 import { PositionCalculator } from "./PositionCalculator";
+import { Sidebar, SidebarMenuButton, type SidebarKey } from "./Sidebar";
+import { DailyQuote } from "./DailyQuote";
+import { MapWidgets } from "./MapWidgets";
 
-type Panel = "home" | "map" | "river" | "ai" | "journal" | "backpack" | "shop" | "analytics" | "profile" | "settings" | null;
+type Panel = "home" | "map" | "achievements" | "river" | "ai" | "journal" | "backpack" | "shop" | "analytics" | "profile" | "settings" | null;
 
 const locations = [
   { id: 1, name: "Долина Рек", short: "Старт", value: "2 175 ₽", x: 16, y: 58, open: true, icon: "🌊" },
@@ -28,7 +31,25 @@ const nav = [
   ["shop", "Лавка", ShoppingBag],
 ] as const;
 
-export function WorldTerminal() {
+const sidebarToPanel: Record<SidebarKey, Panel> = {
+  home: "home",
+  map: "map",
+  achievements: "achievements",
+  journal: "journal",
+  ai: "ai",
+  backpack: "backpack",
+  shop: "shop",
+};
+
+export function WorldTerminal({
+  isSidebarOpen,
+  setIsSidebarOpen,
+  onSidebarNavigate,
+}: {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (open: boolean) => void;
+  onSidebarNavigate?: (key: SidebarKey) => void;
+}) {
   const [panel, setPanel] = useState<Panel>("home");
   const [dealOpen, setDealOpen] = useState(false);
   const [fish, setFish] = useState(3);
@@ -49,6 +70,11 @@ export function WorldTerminal() {
     setPanel(next);
   };
 
+  const navigateSidebar = (key: SidebarKey) => {
+    setPanel(sidebarToPanel[key]);
+    onSidebarNavigate?.(key);
+  };
+
   return (
     <main className={`frog-world ${night ? "is-night" : ""}`}>
       <div className="world-art" />
@@ -58,15 +84,28 @@ export function WorldTerminal() {
         {Array.from({ length: 13 }).map((_, i) => <i key={i} style={{ left: `${10 + ((i * 17) % 82)}%`, top: `${16 + ((i * 23) % 64)}%`, animationDelay: `${i * .33}s` }} />)}
       </div>
 
+      <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onNavigate={navigateSidebar} />
+
       <header className="world-top">
-        <button className="world-brand" onClick={() => setPanel("home")}>
-          <span className="brand-frog">🐸</span>
-          <span><b>Как прекрасна жизнь</b><small>Miracle_Dzhambek · с душой Лягушки</small></span>
-        </button>
+        <div className="world-header-left">
+          <SidebarMenuButton onClick={() => setIsSidebarOpen(true)} />
+          <button className="world-brand" onClick={() => setPanel("home")}>
+            <span className="brand-frog">🐸</span>
+            <span><b>Как прекрасна жизнь</b><small>Miracle_Dzhambek · с душой Лягушки</small></span>
+          </button>
+        </div>
+
+        <div className="world-location-title">
+          <span>ТЕКУЩАЯ ЛОКАЦИЯ</span>
+          <b>🌊 Долина Рек</b>
+        </div>
+
         <div className="world-top-actions">
-          <div className="market-pill"><span className="live-dot" /> MOEX · {marketText}</div>
-          <button className="icon-glass" onClick={() => setNight(v => !v)} title="День / ночь">{night ? <Sparkles size={18}/> : <Moon size={18}/>}</button>
-          <button className="icon-glass" onClick={() => setPanel("settings")}><Settings size={18}/></button>
+          <div className="market-pill"><span className="live-dot" /> 📈 +1.24% · MOEX</div>
+          <button className="icon-glass header-notification" onClick={() => act("🔔 Уведомления проверены.")}><Bell size={18}/><i /></button>
+          <button className="icon-glass desktop-only" onClick={() => setNight(v => !v)} title="День / ночь">{night ? <Sparkles size={18}/> : <Moon size={18}/>}</button>
+          <button className="icon-glass desktop-only" onClick={() => setPanel("settings")}><Settings size={18}/></button>
+          <button className="header-avatar" onClick={() => setPanel("profile")} aria-label="Профиль">🐸</button>
         </div>
       </header>
 
@@ -97,6 +136,8 @@ export function WorldTerminal() {
         ))}
       </div>
 
+      <div className="world-map-widgets"><MapWidgets /></div>
+
       <motion.div className="frog-guide" animate={{ y: market === "active" ? -8 : 0 }}>
         <div className="frog-portrait">🐸<span className="frog-aura" /></div>
         <div className="frog-copy"><span>MIRACLE_DZHAMBEK · НАСТАВНИК</span><b>{frogLine}</b></div>
@@ -118,6 +159,7 @@ export function WorldTerminal() {
         </div>
       </div>
 
+      <DailyQuote />
       <div className="world-toast"><span>●</span>{notice}</div>
 
       <nav className="world-dock glass">
@@ -146,12 +188,13 @@ export function WorldTerminal() {
 }
 
 function PanelContent({ panel, onAction }: { panel: Panel; onAction: (message: string, next?: Panel) => void }) {
-  if (panel === "map") return <><PanelHead icon="🗺️" title="Карта пути" subtitle="От Долины Рек к Вершине Свободы."/><div className="journey-list">{locations.map((x, i) => <div className={`journey-row ${x.open ? "open" : ""}`} key={x.id}><span>{x.icon}</span><div><b>{x.name}</b><small>{x.short} · {x.value}</small></div><em>{x.open ? "Открыто" : "Закрыто"}</em></div>)}</div><div className="panel-tip">🐸 Следующая остановка — Лес Дисциплины. Путь открывается действиями, а не спешкой.</div></>;
+  if (panel === "map") return <><PanelHead icon="🗺️" title="Карта пути" subtitle="От Долины Рек к Вершине Свободы."/><div className="journey-list">{locations.map((x) => <div className={`journey-row ${x.open ? "open" : ""}`} key={x.id}><span>{x.icon}</span><div><b>{x.name}</b><small>{x.short} · {x.value}</small></div><em>{x.open ? "Открыто" : "Закрыто"}</em></div>)}</div><div className="panel-tip">🐸 Следующая остановка — Лес Дисциплины. Путь открывается действиями, а не спешкой.</div></>;
+  if (panel === "achievements") return <><PanelHead icon="🏆" title="Достижения" subtitle="Маленькие шаги складываются в большой путь."/><div className="achievement-list"><div>🌱 Первый шаг <b>+1 дисциплина</b></div><div>🎣 Наблюдатель <b>3 / 10 рыб</b></div><div>✨ Светлячок <b>5 сигналов</b></div></div></>;
   if (panel === "river") return <><PanelHead icon="🌊" title="Река · наблюдение" subtitle="Сравниваем факты, а не настроение рынка."/><div className="terminal-box"><span>MOEXCNY-12.26</span><b>3 681 ₽</b><small>Демо-поток · время последней проверки — сейчас</small></div><div className="signal-box"><Sparkles/><div><b>Светлячки ИИ</b><p>Сигнал не является приказом. Лягушка сначала отделяет изображение от подтверждённых рыночных данных.</p></div></div><button className="panel-primary" onClick={() => onAction("✨ Точка наблюдения сохранена.", "journal")}>Сохранить наблюдение</button></>;
   if (panel === "ai") return <><PanelHead icon="🐸" title="Miracle_Dzhambek · Лягушка ИИ" subtitle="Спокойный наставник над торговым терминалом."/><div className="ai-dialog"><MessageCircle size={18}/><div><b>Что я делаю</b><p>Читаю скриншот, выделяю видимые факты, отдельно проверяю доступные данные и показываю неопределённость.</p></div></div><div className="ai-rules"><b>Правила Лягушки</b><span>01 · Сначала факты</span><span>02 · Потом сценарии</span><span>03 · Риск до входа</span><span>04 · Решение остаётся за тобой</span></div></>;
   if (panel === "journal") return <><PanelHead icon="📖" title="Дневник" subtitle="Твоя память о рынке и собственных решениях."/><div className="journal-entry"><span>Сегодня · 23:06</span><b>Рынок наблюдаем, не догоняем.</b><p>Проверить позицию без спешки. Записать наблюдение. Вернуться к цели.</p></div><button className="panel-primary" onClick={() => onAction("🔥 Шаг записан. +1 к дисциплине.", "journal")}>Записать сегодняшний шаг</button></>;
   if (panel === "backpack") return <><PanelHead icon="🎒" title="Рюкзак" subtitle="То, что ты собрал по дороге."/><div className="inventory-grid"><div><Fish/><b>3 / 10</b><small>Рыбы</small></div><div><Sparkles/><b>5</b><small>Светлячки</small></div><div><Trophy/><b>1</b><small>Знак пути</small></div><div><Flame/><b>6 дней</b><small>Стрик</small></div></div></>;
-  if (panel === "shop") return <><PanelHead icon="🏪" title="Лавка лагеря" subtitle="Улучшения, которые помогают наблюдать, а не торопиться."/><div className="shop-row"><span>🔭</span><div><b>Бинокль реки</b><small>Открывает расширенное наблюдение</small></div><strong>120 XP</strong></div><div className="shop-row"><span>🪵</span><div><b>Костёр дисциплины</b><small>Поддерживает вечерний ритуал</small></div><strong>250 XP</strong></div></>;
+  if (panel === "shop") return <><PanelHead icon="🏪" title="Магазин" subtitle="Улучшения, которые помогают наблюдать, а не торопиться."/><div className="shop-row"><span>🔭</span><div><b>Бинокль реки</b><small>Открывает расширенное наблюдение</small></div><strong>120 XP</strong></div><div className="shop-row"><span>🪵</span><div><b>Костёр дисциплины</b><small>Поддерживает вечерний ритуал</small></div><strong>250 XP</strong></div></>;
   if (panel === "analytics") return <><PanelHead icon="📊" title="Торговый терминал" subtitle="Цифры живут внутри Долины, а не вместо неё."/><PositionCalculator/><div className="terminal-mini"><TrendingUp/><div><b>Текущая идея</b><span>SHORT · MOEXCNY-12.26 · 3 681 ₽</span></div><em>наблюдение</em></div></>;
   if (panel === "profile") return <><PanelHead icon="👤" title="Профиль трейдера" subtitle="Твой путь измеряется дисциплиной, не количеством сделок."/><div className="profile-hero"><span>🐸</span><div><b>Путь Лягушки</b><small>Лагерь новичка · 36%</small></div></div><div className="profile-grid"><b>18<small>сделок</small></b><b>72%<small>успех</small></b><b>1 240<small>XP</small></b><b>6<small>дней стрика</small></b></div></>;
   if (panel === "settings") return <><PanelHead icon="⚙️" title="Настройки" subtitle="Настраиваем помощника под твой ритм."/><div className="settings-row"><span>🔔</span><div><b>Уведомления</b><small>Smart Exit и контрольные точки</small></div><input type="checkbox" defaultChecked /></div><div className="settings-row"><span>🔊</span><div><b>Голос Лягушки</b><small>Подсказки наставника</small></div><input type="checkbox" /></div></>;
